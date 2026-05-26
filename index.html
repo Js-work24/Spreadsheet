@@ -22,8 +22,8 @@
 
 <script>
   // ====== EDIT THESE TWO LINES ======
-  const JSONBIN_BIN_ID = 'PASTE_YOUR_BIN_ID_HERE';
-  const JSONBIN_MASTER_KEY = 'PASTE_YOUR_MASTER_KEY_HERE';
+  const JSONBIN_BIN_ID = '6a15d61fd7f11659b14388aa';
+  const JSONBIN_ACCESS_KEY = '$2a$10$Iqwt.F9dzROz3X2J6h8Y2u2QcfTK7/hAzwzC245zyLMjcQ0DWTrlG';
   // ===================================
   // ====== FOLLOW-UP SETTING ======
   const FOLLOWUP_THRESHOLD_DAYS = 5; // change to whatever feels right
@@ -429,7 +429,7 @@ async function loadFromCloud() {
   setSyncStatus('saving', 'loading from cloud...');
   try {
     const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-      headers: { 'X-Master-Key': JSONBIN_MASTER_KEY }
+      headers: { 'X-Access-Key': JSONBIN_MASTER_KEY }
     });
     if (!res.ok) throw new Error('cloud read failed: ' + res.status);
     const data = await res.json();
@@ -451,7 +451,7 @@ async function saveToCloud(data) {
   try {
     const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_MASTER_KEY },
+      headers: { 'Content-Type': 'application/json', 'X-Access-Key': JSONBIN_MASTER_KEY },
       body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error('cloud write failed: ' + res.status);
