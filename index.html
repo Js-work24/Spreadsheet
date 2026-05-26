@@ -420,8 +420,8 @@ function setLastSync() {
   document.getElementById('last-sync').textContent = 'last synced ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 function isConfigured() {
-  return JSONBIN_BIN_ID && JSONBIN_BIN_ID !== 'PASTE_YOUR_BIN_ID_HERE'
-      && JSONBIN_MASTER_KEY && JSONBIN_MASTER_KEY !== 'PASTE_YOUR_MASTER_KEY_HERE';
+  return JSONBIN_BIN_ID && JSONBIN_BIN_ID !== '6a15d61fd7f11659b14388aa'
+      && JSONBIN_ACCESS_KEY && JSONBIN_ACCESS_KEY !== '$2a$10$Iqwt.F9dzROz3X2J6h8Y2u2QcfTK7/hAzwzC245zyLMjcQ0DWTrlG';
 }
 
 async function loadFromCloud() {
