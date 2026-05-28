@@ -15,7 +15,8 @@
   ║  2. Create a NEW private bin (separate from reviews bin):      ║
   ║     - Click "CREATE BIN", paste [] as content, CREATE          ║
   ║     - Copy the BIN ID                                          ║
-  ║  3. Get MASTER KEY: profile → API KEYS                         ║
+  ║  3. Get ACCESS KEY: API KEYS → Access Keys tab → Create       ║
+  ║     (Read + Update permissions only)                          ║
   ║  4. Paste both into the two lines below                        ║
   ╚═══════════════════════════════════════════════════════════════╝
 -->
@@ -420,8 +421,8 @@ function setLastSync() {
   document.getElementById('last-sync').textContent = 'last synced ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 function isConfigured() {
-  return JSONBIN_BIN_ID && JSONBIN_BIN_ID !== '6a15d61fd7f11659b14388aa'
-      && JSONBIN_ACCESS_KEY && JSONBIN_ACCESS_KEY !== '$2a$10$Iqwt.F9dzROz3X2J6h8Y2u2QcfTK7/hAzwzC245zyLMjcQ0DWTrlG';
+  return JSONBIN_BIN_ID && JSONBIN_BIN_ID !== 'PASTE_YOUR_BIN_ID_HERE'
+      && JSONBIN_ACCESS_KEY && JSONBIN_ACCESS_KEY !== 'PASTE_YOUR_ACCESS_KEY_HERE';
 }
 
 async function loadFromCloud() {
@@ -587,7 +588,7 @@ function render() {
     document.getElementById('setup-warning').innerHTML = `
       <div class="setup-error">
         <h3>setup needed —</h3>
-        <p>Open this file in a text editor and paste your JSONbin <code>BIN_ID</code> and <code>MASTER_KEY</code> near the top of the page. Until then, the tracker works locally only (no cross-device sync).</p>
+        <p>Open this file in a text editor and paste your JSONbin <code>BIN_ID</code> and <code>ACCESS_KEY</code> near the top of the page. Until then, the tracker works locally only (no cross-device sync).</p>
       </div>
     `;
   } else {
