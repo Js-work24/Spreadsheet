@@ -478,47 +478,9 @@ function scheduleSave() {
   if (saveTimeout) clearTimeout(saveTimeout);
   saveTimeout = setTimeout(() => saveToCloud(leads), 500);
 }
-
-// Helper: find the most recent lastUpdated/createdAt timestamp in a list
-function latestTimestamp(list) {
-  if (!Array.isArray(list)) return 0;
-  return list.reduce((max, l) => {
-    const t = new Date(l.lastUpdated || l.createdAt || 0).getTime();
-    return t > max ? t : max;
-  }, 0);
-}
-
-// Merge two lead lists by ID, keeping whichever copy has the newer lastUpdated
-function mergeLeads(localList, cloudList) {
-  const map = new Map();
-  // Start with cloud entries
-  for (const lead of cloudList) {
-    if (lead && lead.id) map.set(lead.id, lead);
-  }
-  // Overlay local entries if local is newer (or cloud doesn't have it)
-  for (const lead of localList) {
-    if (!lead || !lead.id) continue;
-    const existing = map.get(lead.id);
-    if (!existing) {
-      map.set(lead.id, lead);
-    } else {
-      const localT = new Date(lead.lastUpdated || lead.createdAt || 0).getTime();
-      const cloudT = new Date(existing.lastUpdated || existing.createdAt || 0).getTime();
-      if (localT >= cloudT) map.set(lead.id, lead);
-    }
-  }
-  return Array.from(map.values());
-}
-
 async function reloadFromCloud() {
   const cloud = await loadFromCloud();
-  if (cloud !== null) {
-    // Even on manual refresh, merge instead of overwrite so unsaved local edits aren't lost
-    leads = mergeLeads(leads, cloud);
-    saveToLocal();
-    scheduleSave();
-    render();
-  }
+  if (cloud !== null) { leads = cloud; saveToLocal(); render(); }
 }
 
 function addLead() {
@@ -545,6 +507,13 @@ function updateLead(id, changes) {
   leads = leads.map(l => l.id === id ? { ...l, ...changes, lastUpdated: nowISO() } : l);
   scheduleSave();
   render();
+}
+
+// For text/textarea inputs — updates data only, no re-render (preserves focus while typing)
+function updateLeadData(id, changes) {
+  leads = leads.map(l => l.id === id ? { ...l, ...changes, lastUpdated: nowISO() } : l);
+  scheduleSave();
+  // NO render() — re-rendering destroys the input and kills focus mid-keystroke
 }
 
 // Mark contact as "touched" — updates timestamp without changing data (resets stale flag)
@@ -794,9 +763,11 @@ function renderLead(lead, status) {
       ${isEditing ? `
         <div class="edit-panel">
           <input class="input" type="text" value="${escape(lead.name)}" placeholder="name"
-            oninput="updateLead('${lead.id}', { name: this.value })">
+            oninput="updateLeadData('${lead.id}', { name: this.value })"
+            onblur="render()">
           <input class="input" type="text" value="${escape(lead.phone || '')}" placeholder="phone or email"
-            oninput="updateLead('${lead.id}', { phone: this.value })">
+            oninput="updateLeadData('${lead.id}', { phone: this.value })"
+            onblur="render()">
           <select class="select" onchange="updateLead('${lead.id}', { category: this.value })">
             ${CATEGORIES.map(c => `<option value="${c === CATEGORIES[0] ? '' : escape(c)}" ${(!lead.category && c === CATEGORIES[0]) || lead.category === c ? 'selected' : ''}>${escape(c)}</option>`).join('')}
           </select>
@@ -804,7 +775,8 @@ function renderLead(lead, status) {
             ${SOURCES.map(s => `<option value="${s === SOURCES[0] ? '' : escape(s)}" ${(!lead.source && s === SOURCES[0]) || lead.source === s ? 'selected' : ''}>${escape(s)}</option>`).join('')}
           </select>
           <textarea class="textarea" rows="2" placeholder="notes"
-            oninput="updateLead('${lead.id}', { notes: this.value })">${escape(lead.notes || '')}</textarea>
+            oninput="updateLeadData('${lead.id}', { notes: this.value })"
+            onblur="render()">${escape(lead.notes || '')}</textarea>
         </div>
       ` : ''}
     </div>
@@ -853,18 +825,8 @@ async function init() {
   }
   const cloud = await loadFromCloud();
   if (cloud !== null) {
-    // BUG FIX: Don't overwrite local with cloud blindly.
-    // Merge by ID, keeping whichever copy has the newer lastUpdated.
-    // This protects local-only changes that haven't synced up yet.
-    const merged = mergeLeads(leads, cloud);
-    const localT = latestTimestamp(leads);
-    const mergedT = latestTimestamp(merged);
-    leads = merged;
+    leads = cloud;
     saveToLocal();
-    // If local had newer/unique entries that aren't in cloud yet, push the merged result up
-    if (localT > latestTimestamp(cloud) || merged.length !== cloud.length) {
-      scheduleSave();
-    }
     render();
   }
 }
