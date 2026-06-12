@@ -69,6 +69,137 @@
   .issue { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dimmer); }
   .tagline { font-family: 'Fraunces', serif; font-style: italic; font-size: 14px; color: var(--text-dim); }
 
+  /* TAB BAR */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--accent-dim);
+  }
+  .tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-dim);
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    letter-spacing: 0.04em;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .view { display: none; }
+  .view.active { display: block; animation: fadeIn 0.2s ease-out; }
+
+  /* TEMPLATES */
+  .template-intro {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .template-card {
+    border: 1px solid var(--accent-dim);
+    border-radius: 8px;
+    background: var(--bg-card);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .template-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent);
+  }
+  .template-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+  }
+  .template-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+  .template-chevron {
+    color: var(--text-dimmer);
+    font-size: 12px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .template-card.expanded .template-chevron {
+    transform: rotate(90deg);
+    color: var(--accent);
+  }
+  .template-title {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .template-use {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--text-dimmer);
+    margin-bottom: 0;
+    margin-left: 20px;
+  }
+  .template-card.expanded .template-use {
+    margin-bottom: 10px;
+  }
+  .template-copy-btn {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: opacity 0.15s, background 0.15s;
+  }
+  .template-copy-btn:hover { opacity: 0.9; }
+  .template-copy-btn.copied {
+    background: var(--green);
+  }
+  .template-text {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0 14px;
+    border-radius: 6px;
+    border-left: 2px solid var(--accent-dim);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.2s ease;
+  }
+  .template-card.expanded .template-text {
+    max-height: 600px;
+    padding: 12px 14px;
+    opacity: 1;
+  }
+
   .sync-bar {
     display: flex; align-items: center; justify-content: space-between;
     padding: 8px 12px; margin-bottom: 16px;
@@ -289,6 +420,7 @@
     .stat-num { font-size: 18px; }
     .section-desc { display: none; }
     .lead-time { width: 100%; margin-left: 0; margin-top: 4px; }
+    .tab-btn { font-size: 12px; padding: 9px 8px; }
   }
 </style>
 </head>
@@ -303,27 +435,42 @@
     <p class="tagline">— your lead tracker, real-time.</p>
   </header>
 
-  <div id="setup-warning"></div>
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-leads" onclick="switchTab('leads')">LEADS</button>
+    <button class="tab-btn" id="tab-templates" onclick="switchTab('templates')">TEMPLATES</button>
+  </div>
 
-  <div class="sync-bar">
-    <div class="sync-status" id="sync-status">
-      <span class="indicator"></span>
-      <span id="sync-text">connecting...</span>
+  <!-- LEADS VIEW -->
+  <div class="view active" id="view-leads">
+    <div id="setup-warning"></div>
+
+    <div class="sync-bar">
+      <div class="sync-status" id="sync-status">
+        <span class="indicator"></span>
+        <span id="sync-text">connecting...</span>
+      </div>
+      <div style="color: var(--text-dimmer); font-size: 12px;" id="last-sync"></div>
     </div>
-    <div style="color: var(--text-dimmer); font-size: 12px;" id="last-sync"></div>
+
+    <div class="search-row">
+      <span class="search-icon">⌕</span>
+      <input class="search-input" id="search-input" type="text" placeholder="search by name, phone, notes, category..." oninput="onSearch(this.value)">
+      <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none">×</button>
+    </div>
+
+    <div id="followup-area"></div>
+
+    <div class="stats" id="stats"></div>
+    <div id="add-area"></div>
+    <div id="sections-container"></div>
   </div>
 
-  <div class="search-row">
-    <span class="search-icon">⌕</span>
-    <input class="search-input" id="search-input" type="text" placeholder="search by name, phone, notes, category..." oninput="onSearch(this.value)">
-    <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none">×</button>
+  <!-- TEMPLATES VIEW -->
+  <div class="view" id="view-templates">
+    <p class="template-intro">tap copy, paste into Messages — that's it.</p>
+    <div id="templates-container"></div>
   </div>
-
-  <div id="followup-area"></div>
-
-  <div class="stats" id="stats"></div>
-  <div id="add-area"></div>
-  <div id="sections-container"></div>
 
   <footer>
     <p class="footer-text">synced to your cloud bin — works across all your devices.</p>
@@ -357,6 +504,51 @@ const CATEGORIES = [
 const SOURCES = [
   '— pick source —',
   'Google Maps', 'Instagram', 'Referral', 'Walked in', 'Cold text reply', 'Other',
+];
+
+const TEMPLATES = [
+  {
+    id: 'az-base',
+    title: 'AZ Base',
+    use: 'general AZ small businesses, taquerias, restaurants',
+    text: "Hey! My name's J, I'm an Arizona-based web designer. I noticed your business doesn't have a website yet and figured I'd reach out. I build clean modern sites for small businesses for $75 — comes with mobile design, a contact form, and all your info like menu, hours, and location so people can actually find you on Google. Everything's done online so location doesn't matter. Here's some sites I've built: js-work24.github.io. No pressure, just lmk if you wanna chat! – J"
+  },
+  {
+    id: 'food-truck',
+    title: 'Food Truck',
+    use: 'AZ food trucks, mobile food vendors',
+    text: "Hey! My name's J, I'm an Arizona-based web designer. I noticed your food truck doesn't have a website yet and figured I'd reach out. I build clean modern sites for small businesses for $75 — comes with mobile design, a contact form, and all your info like menu, hours, and where you'll be parked so people can actually find you on Google. Everything's done online so location doesn't matter. Here's some sites I've built: js-work24.github.io. No pressure, just lmk if you wanna chat! – J"
+  },
+  {
+    id: 'bakery',
+    title: 'Bakery',
+    use: 'AZ brick & mortar bakeries, cafés',
+    text: "Hey! My name's J, I'm an Arizona-based web designer. I noticed your bakery doesn't have a website yet and figured I'd reach out. I build clean modern sites for small businesses for $75 — comes with mobile design, a contact form, and all your info like menu, hours, and location so people can actually find you on Google. Everything's done online so location doesn't matter. Here's some sites I've built: js-work24.github.io. No pressure, just lmk if you wanna chat! – J"
+  },
+  {
+    id: 'home-bakery',
+    title: 'Home Bakery',
+    use: 'AZ licensed home bakers, custom cake makers',
+    text: "Hey! My name's J, I'm an Arizona-based web designer. I noticed your bakery doesn't have a website yet and figured I'd reach out. I build clean modern sites for small businesses for $75 — comes with mobile design, a contact form, and all your info like menu, prices, and how to order so people can actually find you on Google. Everything's done online so location doesn't matter. Here's some sites I've built: js-work24.github.io. No pressure, just lmk if you wanna chat! – J"
+  },
+  {
+    id: 'mobile-service',
+    title: 'Mobile Service',
+    use: 'AZ mobile detailing, mechanics, groomers, handymen',
+    text: "Hey! My name's J, I'm an Arizona-based web designer. I noticed your business doesn't have a website yet and figured I'd reach out. I build clean modern sites for small businesses for $75 — comes with mobile design, a contact form, and all your info like services, pricing, and service area so people can actually find you on Google. Everything's done online so location doesn't matter. Here's some sites I've built: js-work24.github.io. No pressure, just lmk if you wanna chat! – J"
+  },
+  {
+    id: 'redesign',
+    title: '$100 Redesign',
+    use: 'when their site is broken, has HTTP warnings, or redirects to spam',
+    text: "Hey! My name's J, I'm an Arizona-based web designer. I noticed your listed website isn't actually working — it's showing security errors / redirecting to ad pages, which scares customers away. I can build you a clean replacement site for $100 — modern, mobile-friendly, with menu, hours, and contact info all in one place. Your existing online ordering would still work the same. Here's some sites I've built: js-work24.github.io. No pressure, just lmk if you wanna chat! – J"
+  },
+  {
+    id: 'out-of-state',
+    title: 'Out-of-State',
+    use: 'NM and other states — drops "Arizona-based"',
+    text: "Hey! My name's J, I'm a freelance web designer. I noticed your business doesn't have a website yet and figured I'd reach out. I build clean modern sites for small businesses for $75 — comes with mobile design, a contact form, and all your info like menu, hours, and location so people can actually find you on Google. Everything's done online so location doesn't matter. Here's some sites I've built: js-work24.github.io. No pressure, just lmk if you wanna chat! – J"
+  },
 ];
 
 const STARTER_LIST = [
@@ -569,6 +761,51 @@ function copyToClipboard(text, btnId) {
       }
     });
   }
+}
+
+function copyTemplate(templateId, btnId) {
+  const template = TEMPLATES.find(t => t.id === templateId);
+  if (!template) return;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(template.text).then(() => {
+      const btn = document.getElementById(btnId);
+      if (btn) {
+        const original = btn.textContent;
+        btn.textContent = '✓ Copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1500);
+      }
+    });
+  }
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('view-' + name).classList.add('active');
+}
+
+function renderTemplates() {
+  const container = document.getElementById('templates-container');
+  container.innerHTML = TEMPLATES.map(t => `
+    <div class="template-card" id="tplcard-${t.id}">
+      <div class="template-head" onclick="toggleTemplate('${t.id}')">
+        <div class="template-title-wrap">
+          <span class="template-chevron">▶</span>
+          <div class="template-title">${escape(t.title)}</div>
+        </div>
+        <button class="template-copy-btn" id="tplbtn-${t.id}" onclick="event.stopPropagation(); copyTemplate('${t.id}', 'tplbtn-${t.id}')">⧉ Copy</button>
+      </div>
+      <div class="template-use">— ${escape(t.use)}</div>
+      <div class="template-text">${escape(t.text)}</div>
+    </div>
+  `).join('');
+}
+
+function toggleTemplate(id) {
+  const card = document.getElementById('tplcard-' + id);
+  if (card) card.classList.toggle('expanded');
 }
 
 function onSearch(value) {
@@ -818,6 +1055,7 @@ function toggleStaleFilter() {
 
 async function init() {
   leads = loadFromLocal();
+  renderTemplates();
   render();
   if (!isConfigured()) {
     setSyncStatus('error', 'setup needed — local only');
